@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lost & Found AI</title>
+  
+  <!-- 1. Load Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 2. Configure Tailwind & Fonts -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- 3. Basic Styles -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Hide all pages by default, JS will show the correct one */
+    .page {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- App Container -->
+  <div class="min-h-screen">
+    
+    <!-- 4. Header (placeholder, JS will render content) -->
+    <header id="header-container" class="sticky top-0 z-50 bg-white shadow-md"></header>
+    
+    <!-- 5. Main Content (contains all "pages") -->
+    <main class="container mx-auto max-w-7xl p-4 md:p-8">
+      
+      <!-- Home Page -->
+      <div id="page-home" class="page">
+        <div class="bg-white shadow-lg rounded-xl p-6 md:p-8 mb-8 border border-gray-200">
+          <h2 class="text-3xl font-bold text-gray-800 mb-4">Find What's Lost</h2>
+          <p class="text-gray-600 mb-6">Search for lost items or browse found items reported by the community.</p>
+          
+          <form id="search-form" class="flex flex-col md:flex-row gap-4">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search for items (e.g., 'wallet', 'keys', 'library')"
+              class="flex-grow w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div id="filter-buttons" class="flex items-center space-x-2 bg-gray-100 p-1 rounded-lg">
+              <button type="button" data-filter="ALL" class="filter-btn w-full md:w-auto px-4 py-2 rounded-md font-medium transition-all bg-white text-blue-600 shadow">All</button>
+              <button type="button" data-filter="LOST" class="filter-btn w-full md:w-auto px-4 py-2 rounded-md font-medium transition-all bg-transparent text-gray-600 hover:bg-gray-200">Lost</button>
+              <button type="button" data-filter="FOUND" class="filter-btn w-full md:w-auto px-4 py-2 rounded-md font-medium transition-all bg-transparent text-gray-600 hover:bg-gray-200">Found</button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Item list will be injected here by JS -->
+        <div id="items-container"></div> 
+      </div>
+      
+      <!-- Login Page -->
+      <div id="page-login" class="page max-w-md mx-auto">
+        <div class="bg-white shadow-xl rounded-xl border border-gray-200 p-8">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Log In to Your Account</h2>
+          <form id="login-form" class="space-y-5">
+            <div>
+              <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-300">
+              <span class="btn-text">Log In</span>
+              <span class="btn-spinner hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></span>
+            </button>
+          </form>
+          <p class="text-center text-gray-600 mt-6">
+            Don't have an account? 
+            <button data-page="signup" class="nav-link font-semibold text-blue-600 hover:text-blue-700">Sign Up</button>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Sign Up Page -->
+      <div id="page-signup" class="page max-w-md mx-auto">
+        <div class="bg-white shadow-xl rounded-xl border border-gray-200 p-8">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Create a New Account</h2>
+          <form id="signup-form" class="space-y-5">
+            <div>
+              <label for="signup-firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+              <input type="text" id="signup-firstName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="signup-lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+              <input type="text" id="signup-lastName" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input type="email" id="signup-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <input type="password" id="signup-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-300">
+              <span class="btn-text">Sign Up</span>
+              <span class="btn-spinner hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></span>
+            </button>
+          </form>
+          <p class="text-center text-gray-600 mt-6">
+            Already have an account? 
+            <button data-page="login" class="nav-link font-semibold text-blue-600 hover:text-blue-700">Log In</button>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Post Item Page -->
+      <div id="page-post" class="page max-w-2xl mx-auto">
+        <div class="bg-white shadow-xl rounded-xl border border-gray-200 p-8">
+          <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Report an Item</h2>
+          <form id="post-item-form" class="space-y-6">
+            <div>
+              <label for="itemName" class="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+              <input type="text" id="itemName" placeholder="e.g., Brown Leather Wallet" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="itemType" class="block text-sm font-medium text-gray-700 mb-1">Item Type</label>
+              <select id="itemType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="LOST">I Lost this item</option>
+                <option value="FOUND">I Found this item</option>
+              </select>
+            </div>
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea id="description" rows="4" placeholder="e.g., Has a driver's license inside, found on bench #14" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div>
+              <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+              <input type="text" id="location" placeholder="e.g., Central Park" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date Lost/Found</label>
+              <input type="date" id="date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label for="contactInfo" class="block text-sm font-medium text-gray-700 mb-1">Contact Info (Email or Phone)</label>
+              <input type="text" id="contactInfo" placeholder="This will be shown to logged-in users" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:bg-blue-300">
+              <span class="btn-text">Submit Item</span>
+              <span class="btn-spinner hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></span>
+            </button>
+          </form>
+        </div>
+      </div>
+      
+    </main>
+    
+    <!-- 6. Footer -->
+    <footer class="text-center p-4 text-gray-500 text-sm border-t border-gray-200 mt-12">
+      © 2025 Lost & Found AI
+    </footer>
+    
+    <!-- 7. Feedback Modal (hidden by default) -->
+    <div id="feedback-modal" class="fixed top-5 right-5 z-[100] bg-gray-800 text-white px-6 py-4 rounded-lg shadow-xl transition-all duration-300 ease-out" style="transform: translateX(110%); opacity: 0;">
+      <p id="modal-message"></p>
+    </div>
+    
+  </div>
+
+  <!-- 8. Main Application JavaScript -->
+  <script type="module">
+    // --- API Configuration ---
+    const API_URL = 'http://localhost:3001';
+    
+    // --- Application State ---
+    let state = {
+      currentPage: 'home',
+      isLoggedIn: false,
+      authToken: null,
+      currentUser: null,
+      items: [],
+      isLoading: true,
+      searchQuery: '',
+      filterType: 'ALL',
+      modalTimeout: null,
+    };
+    
+    // --- DOM Element References ---
+    const headerContainer = document.getElementById('header-container');
+    const itemsContainer = document.getElementById('items-container');
+    const modalElement = document.getElementById('feedback-modal');
+    const modalMessage = document.getElementById('modal-message');
+    
+    const pages = {
+      home: document.getElementById('page-home'),
+      login: document.getElementById('page-login'),
+      signup: document.getElementById('page-signup'),
+      post: document.getElementById('page-post'),
+    };
+    
+    // --- Utility Functions ---
+    
+    function showModal(message) {
+      if (state.modalTimeout) clearTimeout(state.modalTimeout);
+      modalMessage.textContent = message;
+      modalElement.style.transform = 'translateX(0)';
+      modalElement.style.opacity = '1';
+      
+      state.modalTimeout = setTimeout(() => {
+        modalElement.style.transform = 'translateX(110%)';
+        modalElement.style.opacity = '0';
+      }, 3000);
+    }
+    
+    function toggleSubmitSpinner(form, isSubmitting) {
+      const btnText = form.querySelector('.btn-text');
+      const btnSpinner = form.querySelector('.btn-spinner');
+      const btn = form.querySelector('button[type="submit"]');
+      
+      if (isSubmitting) {
+        btnText.classList.add('hidden');
+        btnSpinner.classList.remove('hidden');
+        btn.disabled = true;
+      } else {
+        btnText.classList.remove('hidden');
+        btnSpinner.classList.add('hidden');
+        btn.disabled = false;
+      }
+    }
+    
+    // --- Render Functions ---
+    
+    function renderHeader() {
+      let navButtons = '';
+      if (state.isLoggedIn) {
+        navButtons = `
+          <button data-page="post" class="nav-link bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base">
+            Post an Item
+          </button>
+          <button id="logout-btn" class="bg-gray-200 text-gray-700 px-3 md:px-5 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors text-sm md:text-base">
+            Log Out
+          </button>
+        `;
+      } else {
+        navButtons = `
+          <button data-page="login" class="nav-link text-gray-600 px-3 md:px-5 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base">
+            Log In
+          </button>
+          <button data-page="signup" class="nav-link bg-blue-600 text-white px-3 md:px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base">
+            Sign Up
+          </button>
+        `;
+      }
+      
+      headerContainer.innerHTML = `
+        <nav class="container mx-auto max-w-7xl px-4 md:px-8 py-4 flex justify-between items-center">
+          <h1 data-page="home" class="nav-link text-2xl font-bold text-blue-600 cursor-pointer">
+            Lost & Found
+          </h1>
+          <div class="flex items-center space-x-2 md:space-x-4">
+            ${navButtons}
+          </div>
+        </nav>
+      `;
+    }
+    
+    function renderHomePage() {
+      if (state.isLoading) {
+        itemsContainer.innerHTML = `
+          <div class="text-center p-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Loading items...</p>
+          </div>
+        `;
+        return;
+      }
+      
+      if (state.items.length === 0) {
+        itemsContainer.innerHTML = `
+          <div class="text-center p-12 bg-white rounded-xl shadow-sm border border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-700">No items found.</h3>
+            <p class="text-gray-500 mt-2">Try adjusting your search or filter.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const itemsHtml = state.items.map(renderItemCard).join('');
+      itemsContainer.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${itemsHtml}</div>`;
+    }
+    
+    function renderItemCard(item) {
+      const [bgColor, textColor, label] = item.itemType === 'LOST'
+        ? ['bg-red-100', 'text-red-700', 'LOST']
+        : ['bg-green-100', 'text-green-700', 'FOUND'];
+        
+      const formattedDate = new Date(item.date).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+      
+      let contactInfoHtml = '';
+      // CORE REQUIREMENT (Gate 2): Check if user is logged in AND contact info exists
+      if (state.isLoggedIn && item.contactInfo) {
+        contactInfoHtml = `
+          <div>
+            <span class="text-sm font-semibold text-gray-600">Contact Info:</span>
+            <p class="text-blue-600 font-medium break-all">${item.contactInfo}</p>
+          </div>
+        `;
+      } else {
+        contactInfoHtml = `
+          <p class="text-sm text-gray-500 italic text-center">
+            ${state.isLoggedIn ? 'Contact info not provided.' : 'Log in to view contact information'}
+          </p>
+        `;
+      }
+      
+      return `
+        <div class="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden flex flex-col transition-shadow hover:shadow-xl">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-bold text-gray-800">${item.itemName}</h3>
+              <span class="px-3 py-1 rounded-full text-sm font-semibold ${bgColor} ${textColor}">
+                ${label}
+              </span>
+            </div>
+            <p class="text-gray-600 mb-4">${item.description || ''}</p>
+            <div class="space-y-3 text-sm text-gray-700">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span>${item.location}</span>
+              </div>
+              <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>${formattedDate}</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-6 py-4 mt-auto border-t border-gray-100">
+            ${contactInfoHtml}
+          </div>
+        </div>
+      `;
+    }
+    
+    // --- Navigation ---
+    
+    function navigateTo(page) {
+      // CORE REQUIREMENT (Gate 1): Check for auth before showing 'post' page
+      if (page === 'post' && !state.isLoggedIn) {
+        showModal('You must be logged in to post an item.');
+        page = 'login';
+      }
+      
+      state.currentPage = page;
+      
+      // Hide all pages
+      Object.values(pages).forEach(p => p.style.display = 'none');
+      
+      // Show the current page
+      pages[state.currentPage].style.display = 'block';
+      
+      // Re-render header to reflect auth state
+      renderHeader();
+      
+      // If navigating home, re-render items (in case auth state changed)
+      if (state.currentPage === 'home') {
+        renderHomePage();
+      }
+
+      // Set default date for post form
+      if (state.currentPage === 'post') {
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+      }
+    }
+    
+    // --- API & Event Handlers ---
+    
+    async function loadItems() {
+      state.isLoading = true;
+      renderHomePage(); // Show loading spinner
+      
+      try {
+        const params = new URLSearchParams({ 
+          search: state.searchQuery, 
+          type: state.filterType 
+        });
+        
+        const headers = { 'Content-Type': 'application/json' };
+        if (state.authToken) {
+          headers['Authorization'] = `Bearer ${state.authToken}`;
+        }
+        
+        const response = await fetch(`${API_URL}/api/items?${params.toString()}`, { headers });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch items from server.');
+        }
+        
+        state.items = await response.json();
+      } catch (error) {
+        showModal(`Error fetching items: ${error.message}`);
+        state.items = []; // Clear items on error
+      }
+      
+      state.isLoading = false;
+      renderHomePage(); // Render items or "no items" message
+    }
+    
+    async function handleLogin(e, form) {
+      e.preventDefault();
+      toggleSubmitSpinner(form, true);
+      
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Login failed');
+        
+        handleLoginSuccess(data);
+      } catch (error) {
+        showModal(error.message);
+      }
+      
+      toggleSubmitSpinner(form, false);
+    }
+    
+    async function handleSignUp(e, form) {
+      e.preventDefault();
+      toggleSubmitSpinner(form, true);
+      
+      const firstName = document.getElementById('signup-firstName').value;
+      const lastName = document.getElementById('signup-lastName').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, email, password }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Sign up failed');
+        
+        handleSignUpSuccess(data);
+      } catch (error) {
+        showModal(error.message);
+      }
+      
+      toggleSubmitSpinner(form, false);
+    }
+    
+    async function handlePostItem(e, form) {
+      e.preventDefault();
+      toggleSubmitSpinner(form, true);
+      
+      const itemData = {
+        itemName: document.getElementById('itemName').value,
+        itemType: document.getElementById('itemType').value,
+        description: document.getElementById('description').value,
+        location: document.getElementById('location').value,
+        date: document.getElementById('date').value,
+        contactInfo: document.getElementById('contactInfo').value,
+      };
+      
+      try {
+        const response = await fetch(`${API_URL}/api/items`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.authToken}`
+          },
+          body: JSON.stringify(itemData),
+        });
+        const newItem = await response.json();
+        if (!response.ok) throw new Error(newItem.message || 'Failed to post item');
+        
+        handlePostSuccess(newItem);
+      } catch (error) {
+        showModal(error.message);
+      }
+      
+      toggleSubmitSpinner(form, false);
+    }
+    
+    // --- Auth State Changers ---
+    
+    function handleLoginSuccess(data) {
+      state.isLoggedIn = true;
+      state.authToken = data.token;
+      state.currentUser = data.user;
+      navigateTo('home');
+      showModal('Welcome back!');
+      loadItems(); // Re-fetch items to get contact info
+    }
+    
+    function handleSignUpSuccess(data) {
+      state.isLoggedIn = true;
+      state.authToken = data.token;
+      state.currentUser = data.user;
+      navigateTo('home');
+      showModal('Account created successfully!');
+    }
+    
+    function handleLogout() {
+      state.isLoggedIn = false;
+      state.authToken = null;
+      state.currentUser = null;
+      navigateTo('home');
+      showModal('You have been logged out.');
+      loadItems(); // Re-fetch items to hide contact info
+    }
+    
+    // --- Initializer ---
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set initial page and render header
+      navigateTo('home');
+      
+      // Fetch initial items
+      loadItems();
+      
+      // --- Attach Global Event Listeners ---
+      
+      // Navigation clicks
+      document.body.addEventListener('click', (e) => {
+        // Handle nav links in header and auth pages
+        const navLink = e.target.closest('.nav-link');
+        if (navLink) {
+          e.preventDefault();
+          navigateTo(navLink.dataset.page);
+        }
+        
+        // Handle logout button
+        if (e.target.id === 'logout-btn') {
+          handleLogout();
+        }
+      });
+      
+      // Search form
+      document.getElementById('search-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.searchQuery = document.getElementById('search-input').value;
+        loadItems();
+      });
+      
+      // Filter buttons
+      document.getElementById('filter-buttons').addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (btn) {
+          // Update active style
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('bg-white', 'text-blue-600', 'shadow');
+            b.classList.add('bg-transparent', 'text-gray-600', 'hover:bg-gray-200');
+          });
+          btn.classList.add('bg-white', 'text-blue-600', 'shadow');
+          btn.classList.remove('bg-transparent', 'text-gray-600', 'hover:bg-gray-200');
+          
+          state.filterType = btn.dataset.filter;
+          loadItems();
+        }
+      });
+      
+      // Auth forms
+      document.getElementById('login-form').addEventListener('submit', (e) => handleLogin(e, e.target));
+      document.getElementById('signup-form').addEventListener('submit', (e) => handleSignUp(e, e.target));
+      
+      // Post item form
+      document.getElementById('post-item-form').addEventListener('submit', (e) => handlePostItem(e, e.target));
+    });
+  </script>
+</body>
+</html>
